@@ -1,0 +1,114 @@
+{
+  "products": {
+    "cc0a695b89": {
+      "id": "cc0a695b89",
+      "status": "published",
+      "shape": "box",
+      "brief": {
+        "customer": "Woolworths",
+        "product": "noodle",
+        "die_ref": "REF",
+        "operator": "t",
+        "notes": ""
+      },
+      "created_at": 1784958808.5346746,
+      "slug": "woolworths-noodle-ref",
+      "published_at": 1784958810.1137412,
+      "pdf_kind": "flat",
+      "candidates": [
+        {
+          "file": "cand_0.png",
+          "thumb": "cand_0_thumb.jpg",
+          "label": "Page 1 \u2014 full page (manual crop)",
+          "is_guide": false,
+          "shape_guess": "panel",
+          "source": "flat"
+        },
+        {
+          "file": "cand_1.png",
+          "thumb": "cand_1_thumb.jpg",
+          "label": "Page 1 \u2014 panel",
+          "is_guide": false,
+          "shape_guess": "panel",
+          "source": "flat"
+        },
+        {
+          "file": "cand_2.png",
+          "thumb": "cand_2_thumb.jpg",
+          "label": "Page 1 \u2014 panel",
+          "is_guide": false,
+          "shape_guess": "panel",
+          "source": "flat"
+        },
+        {
+          "file": "cand_3.png",
+          "thumb": "cand_3_thumb.jpg",
+          "label": "Page 1 \u2014 wide-panel",
+          "is_guide": false,
+          "shape_guess": "wide-panel",
+          "source": "flat"
+        },
+        {
+          "file": "cand_4.png",
+          "thumb": "cand_4_thumb.jpg",
+          "label": "Page 1 \u2014 panel",
+          "is_guide": false,
+          "shape_guess": "panel",
+          "source": "flat"
+        }
+      ],
+      "auto_pick": {
+        "front": "cand_0.png",
+        "back": "cand_1.png",
+        "side": "cand_2.png"
+      }
+    },
+    "44003279f1": {
+      "id": "44003279f1",
+      "status": "published",
+      "shape": "box",
+      "brief": {
+        "customer": "Woolworths",
+        "product": "braai",
+        "die_ref": "REF",
+        "operator": "t",
+        "notes": ""
+      },
+      "created_at": 1784958810.1901214,
+      "slug": "woolworths-braai-ref",
+      "published_at": 1784958823.157216,
+      "pdf_kind": "flat",
+      "candidates": [
+        {
+          "file": "cand_0.png",
+          "thumb": "cand_0_thumb.jpg",
+          "label": "Page 1 \u2014 panel",
+          "is_guide": false,
+          "shape_guess": "panel",
+          "source": "flat"
+        },
+        {
+          "file": "cand_1.png",
+          "thumb": "cand_1_thumb.jpg",
+          "label": "Page 1 \u2014 full page (manual crop)",
+          "is_guide": false,
+          "shape_guess": "panel",
+          "source": "flat"
+        },
+        {
+          "file": "cand_2.png",
+          "thumb": "cand_2_thumb.jpg",
+          "label": "Page 1 \u2014 panel",
+          "is_guide": false,
+          "shape_guess": "panel",
+          "source": "flat"
+        }
+      ],
+      "auto_pick": {
+        "front": "cand_0.png",
+        "back": "cand_1.png",
+        "side": "cand_2.png"
+      }
+    }
+  }
+}

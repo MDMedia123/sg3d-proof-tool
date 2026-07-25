@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — S&G 3D Proof Tool{% endblock %}
+{% block content %}
+<h1>Products</h1>
+<p class="sub">Every packaging proof that's been generated, in review, or published.</p>
+
+<div class="card">
+  {% if not products %}
+    <p class="sub" style="margin:0;">Nothing here yet. <a href="{{ url_for('new_product') }}">Create your first product</a>.</p>
+  {% else %}
+  <table>
+    <thead>
+      <tr><th>Customer</th><th>Product</th><th>Die Ref</th><th>Shape</th><th>Status</th><th>Link</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+      <tr>
+        <td>{{ p.brief.customer or "—" }}</td>
+        <td>{{ p.brief.product or "—" }}</td>
+        <td>{{ p.brief.die_ref or "—" }}</td>
+        <td>{{ p.shape }}</td>
+        <td><span class="status-pill status-{{ p.status }}">{{ p.status }}</span></td>
+        <td>
+          {% if p.status == 'published' %}
+            <code>/proofs/{{ p.slug }}</code>
+          {% else %}
+            <span class="sub">—</span>
+          {% endif %}
+        </td>
+        <td><a href="{{ url_for('review', pid=p.id) }}">Open</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+
+<a class="btn" href="{{ url_for('new_product') }}">+ New Product</a>
+{% endblock %}

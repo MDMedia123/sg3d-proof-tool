@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}New Product — S&G 3D Proof Tool{% endblock %}
+{% block content %}
+<h1>New Product</h1>
+<p class="sub">Fill in the brief, attach the high-res PDF, and pick the packaging shape. We'll extract the artwork automatically and take you to a quick review step next.</p>
+
+<form class="card" method="post" enctype="multipart/form-data">
+  <div class="grid">
+    <div class="field">
+      <label>Customer</label>
+      <input type="text" name="customer" placeholder="e.g. IN2 Food" required>
+    </div>
+    <div class="field">
+      <label>Product / job description</label>
+      <input type="text" name="product" placeholder="e.g. Large Sandwich Wedge" required>
+    </div>
+    <div class="field">
+      <label>Die reference</label>
+      <input type="text" name="die_ref" placeholder="e.g. I2F-135">
+    </div>
+    <div class="field">
+      <label>Operator</label>
+      <input type="text" name="operator" placeholder="Your initials">
+    </div>
+  </div>
+  <div class="field">
+    <label>Notes (internal, optional)</label>
+    <textarea name="notes" placeholder="Anything the reviewer should know about this file"></textarea>
+  </div>
+
+  <div class="field">
+    <label>Packaging shape</label>
+    <div class="shape-options">
+      {% for key, tpl in shapes.items() %}
+      <label class="shape-option">
+        <input type="radio" name="shape" value="{{ key }}" {% if loop.first %}checked{% endif %}>
+        {{ tpl.label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="field">
+    <label>High-res PDF</label>
+    <input type="file" name="pdf" accept="application/pdf" required>
+  </div>
+
+  <button class="btn" type="submit" id="uploadBtn">Upload &amp; Extract Artwork</button>
+  <span id="uploadStatus" class="sub" style="margin-left:10px;"></span>
+</form>
+<script>
+document.querySelector('form.card').addEventListener('submit', function(){
+  const btn = document.getElementById('uploadBtn');
+  const status = document.getElementById('uploadStatus');
+  btn.disabled = true;
+  btn.textContent = 'Processing…';
+  status.textContent = 'Rendering and scanning the PDF for artwork — large or high-res files can take up to a minute. Please don\'t close this tab or hit refresh.';
+});
+</script>
+{% endblock %}

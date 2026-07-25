@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}Review — {{ record.brief.product or "Product" }}{% endblock %}
+{% block content %}
+<h1>{{ record.brief.customer }} — {{ record.brief.product }}</h1>
+<p class="sub">
+  Die ref: {{ record.brief.die_ref or "—" }} &nbsp;•&nbsp;
+  Shape: {{ record.shape }} &nbsp;•&nbsp;
+  Source PDF type detected: <strong>{{ record.pdf_kind }}</strong>
+  {% if record.status == 'published' %}&nbsp;•&nbsp;<span class="status-pill status-published">published</span>{% endif %}
+</p>
+
+{% if record.status == 'published' %}
+<div class="card">
+  <h2>Live link</h2>
+  <div class="link-box">
+    <code>{{ request.host_url }}proofs/{{ record.slug }}</code>
+    <a class="btn secondary" href="{{ url_for('public_proof', slug=record.slug) }}" target="_blank">Open</a>
+  </div>
+</div>
+{% endif %}
+
+<form id="reviewForm">
+
+<div class="card">
+  <h2>Your 3D mockup</h2>
+  <p class="sub">We picked the best-looking artwork for each face automatically. If it looks right, publish it below — only open "Swap artwork" if something needs fixing.</p>
+  <div style="margin-top:14px;">
+    {% if has_draft %}
+    <iframe id="previewFrame" class="preview-frame" src="{{ url_for('preview_draft', pid=record.id) }}?t=0"></iframe>
+    {% else %}
+    <iframe id="previewFrame" class="preview-frame" src="about:blank"></iframe>
+    {% endif %}
+  </div>
+  <div style="margin-top:14px;">
+    <button class="btn" type="button" id="publishBtn" {{ '' if has_draft else 'disabled' }}>Publish &amp; Get Link</button>
+    <button class="btn secondary" type="button" id="previewBtn">Regenerate Preview</button>
+    <span id="previewStatus" class="sub" style="margin-left:10px;"></span>
+    <span id="publishStatus" class="sub" style="margin-left:10px;"></span>
+  </div>
+</div>
+
+<div class="card">
+  <details id="swapDetails">
+    <summary style="cursor:pointer; font-weight:600; font-size:16px;">Swap artwork or fine-tune placement (only if the automatic pick above isn't right)</summary>
+    <div style="margin-top:16px;">
+  {% for slot in slots %}
+  <div class="slot-block">
+    <h3>{{ slot.label }}</h3>
+    <div class="hint">{{ slot.hint }}</div>
+
+    <div class="cand-grid" data-slot="{{ slot.key }}">
+      {% for c in candidates %}
+      <div class="cand-item {{ 'guide' if c.is_guide else '' }} {{ 'selected' if auto_pick.get(slot.key) == c.file else '' }}" data-file="{{ c.file }}">
+        <img src="{{ url_for('candidate_image', pid=record.id, fname=c.thumb or c.file) }}" loading="lazy" onerror="this.closest('.cand-item').classList.add('img-broken')">
+        {{ c.label }}
+      </div>
+      {% endfor %}
+    </div>
+    <input type="hidden" name="slot_{{ slot.key }}_file" class="slot-hidden-input" data-slot="{{ slot.key }}" value="{{ auto_pick.get(slot.key, '') }}">
+
+    <div class="adjust-row">
+      <div class="field">
+        <label>Rotate</label>
+        <select name="slot_{{ slot.key }}_rotate">
+          <option value="0">0°</option>
+          <option value="90">90°</option>
+          <option value="180">180°</option>
+          <option value="270">270°</option>
+        </select>
+      </div>
+      <div class="field"><label>Trim top %</label><input type="number" name="slot_{{ slot.key }}_crop_top" value="0" min="0" max="49"></div>
+      <div class="field"><label>Trim bottom %</label><input type="number" name="slot_{{ slot.key }}_crop_bottom" value="0" min="0" max="49"></div>
+      <div class="field"><label>Trim left %</label><input type="number" name="slot_{{ slot.key }}_crop_left" value="0" min="0" max="49"></div>
+      <div class="field"><label>Trim right %</label><input type="number" name="slot_{{ slot.key }}_crop_right" value="0" min="0" max="49"></div>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% if record.shape == 'cylinder' %}
+    <div class="adjust-row">
+      <div class="field"><label>Wrap seam shift %</label><input type="number" name="wrap_offset" value="0" min="0" max="100"></div>
+      <div class="field"><label>Lid rotation °</label><input type="number" name="lid_rotation_deg" value="90" min="0" max="360"></div>
+    </div>
+    <p class="hint" style="margin-top:8px;">If the wrap seam cuts through the logo, nudge "wrap seam shift". If the lid graphic looks rotated, adjust "lid rotation".</p>
+  {% elif record.shape == 'wedge' %}
+    <div class="adjust-row">
+      <div class="field"><label>Window left %</label><input type="number" name="win_x0" value="7" min="0" max="100"></div>
+      <div class="field"><label>Window right %</label><input type="number" name="win_x1" value="90" min="0" max="100"></div>
+      <div class="field"><label>Window top %</label><input type="number" name="win_y0" value="44" min="0" max="100"></div>
+      <div class="field"><label>Window bottom %</label><input type="number" name="win_y1" value="90" min="0" max="100"></div>
+    </div>
+    <p class="hint" style="margin-top:8px;">These position the die-cut window pane over the front-face artwork (as % of that face, top-left origin).</p>
+  {% elif record.shape == 'box' %}
+    <div class="adjust-row">
+      <div class="field"><label>Box depth %</label><input type="number" name="box_depth_ratio" value="32" min="5" max="150"></div>
+    </div>
+    <p class="hint" style="margin-top:8px;">Depth as a % of the box's width — we can't read real dimensions from the PDF, so nudge this until the proportions look right.</p>
+  {% endif %}
+    </div>
+  </details>
+</div>
+</form>
+
+<style>
+.img-broken img { display:none; }
+.img-broken::after { content:'(preview unavailable — pick by filename)'; font-size:11px; color:#999; }
+</style>
+
+<script>
+document.querySelectorAll('.cand-grid').forEach(grid => {
+  const slotKey = grid.dataset.slot;
+  const hidden = document.querySelector(`.slot-hidden-input[data-slot="${slotKey}"]`);
+  grid.querySelectorAll('.cand-item').forEach(item => {
+    item.addEventListener('click', () => {
+      grid.querySelectorAll('.cand-item').forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+      hidden.value = item.dataset.file;
+    });
+  });
+});
+
+const form = document.getElementById('reviewForm');
+const previewBtn = document.getElementById('previewBtn');
+const publishBtn = document.getElementById('publishBtn');
+const previewStatus = document.getElementById('previewStatus');
+const publishStatus = document.getElementById('publishStatus');
+const previewFrame = document.getElementById('previewFrame');
+
+previewBtn.addEventListener('click', async () => {
+  previewStatus.textContent = 'Generating…';
+  previewBtn.disabled = true;
+  try {
+    const fd = new FormData(form);
+    const res = await fetch("{{ url_for('review_preview', pid=record.id) }}", { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.ok) {
+      previewFrame.src = data.url + '?t=' + Date.now();
+      previewStatus.textContent = 'Preview ready.';
+      publishBtn.disabled = false;
+    } else {
+      previewStatus.textContent = 'Error: ' + data.error;
+    }
+  } catch (e) {
+    previewStatus.textContent = 'Error generating preview.';
+  }
+  previewBtn.disabled = false;
+});
+
+publishBtn.addEventListener('click', async () => {
+  publishStatus.textContent = 'Publishing…';
+  publishBtn.disabled = true;
+  const res = await fetch("{{ url_for('publish', pid=record.id) }}", { method: 'POST' });
+  if (res.redirected || res.ok) {
+    window.location.href = "{{ url_for('review', pid=record.id) }}";
+  } else {
+    publishStatus.textContent = 'Error publishing.';
+    publishBtn.disabled = false;
+  }
+});
+</script>
+{% endblock %}

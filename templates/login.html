@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Log in — S&G 3D Proof Tool{% endblock %}
+{% block content %}
+<div class="login-shell">
+  <div class="card login-card">
+    <h1>S&amp;G 3D Proof Tool</h1>
+    <p class="sub">Staff access only.</p>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    <form method="post">
+      <div class="field">
+        <label>Password</label>
+        <input type="password" name="password" autofocus>
+      </div>
+      <button class="btn" type="submit">Log in</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
